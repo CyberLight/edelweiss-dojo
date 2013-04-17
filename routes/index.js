@@ -44,3 +44,28 @@ exports.api_register_user_post = function(req, res){
     }
     res.send(200);
 };
+
+exports.api_signin_user_post = function(req, res){
+    var validUser = { email : 'testuser@email.ru', password : 'testPassword'},
+        entityValidator = new EntityValidator(['email', 'password']);
+        loginData = req.body;
+
+    if(!req.is('json')){
+        res.send(400, { message : 'Invalid format of data'});
+        return;
+    }
+
+    var result = entityValidator.isValid(loginData);
+    if(!result.success){
+        res.send(400, result);
+        return;
+    }
+
+    if(loginData.email !== validUser.email
+        || loginData.password !== validUser.password){
+
+        res.send(401);
+        return;
+    }
+    res.send(200);
+};
