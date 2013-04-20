@@ -3,6 +3,23 @@
  * GET home page.
  */
 
+var __ = require('underscore')._,
+    // in memory db implementation for testing purposes
+    db = (function(u){ 
+        var entities = [],
+        save = function(entity){
+            entities.push(entity);
+        },
+        find = function(entity){
+           return u.where(entities, entity);
+        };
+        return {
+            save : save,
+            find : find
+        }
+    })(__);
+
+
 function isEmpty(map) {
     for(var key in map) {
         if (map.hasOwnProperty(key)) {
@@ -36,9 +53,16 @@ exports.index = function(req, res){
 exports.api_register_user_post = function(req, res){
     var registerValidator = new EntityValidator(['login','firstname','lastname','password','email']);
     if(req.is('json')){
-        var result = registerValidator.isValid(req.body);
-        if(isEmpty(req.body) || !result.success){
+        var entity = req.body,
+            result = registerValidator.isValid(entity);
+        if(isEmpty(entity) || !result.success){
             res.send(400, result);
+            return;
+        }
+        if(db.find(entity).length == 0){
+            db.save(req.body);
+        }else{
+            res.send(400);
             return;
         }
     }
